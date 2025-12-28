@@ -111,7 +111,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return mediaToggleFavorite(m, msg)
 
 		case "F":
-			return mediaShowFavorites(m)
+			return mediaShowFavorites(m, msg)
 		}
 
 	case playlistResultMsg:
@@ -466,7 +466,9 @@ func mediaAddSongToQueue(m model) model {
 
 func mediaDeleteSongFromQueue(m model) model {
 	if m.focus == focusMain && m.viewMode == viewQueue && len(m.queue) > 0 {
-		m.queue = append(m.queue[:m.cursorMain], m.queue[m.cursorMain+1:]...)
+		if m.cursorMain != m.queueIndex {
+			m.queue = append(m.queue[:m.cursorMain], m.queue[m.cursorMain+1:]...)
+		}
 	}
 
 	if m.cursorMain >= len(m.queue) && m.cursorMain > 0 {
@@ -580,8 +582,16 @@ func mediaToggleFavorite(m model, msg tea.Msg) (model, tea.Cmd) {
 
 	switch m.filterMode {
 	case filterSongs:
-		if len(m.songs) > 0 {
-			id = m.songs[m.cursorMain].ID
+
+		var targetList []api.Song
+		if m.viewMode == viewList {
+			targetList = m.songs
+		} else if m.viewMode == viewQueue {
+			targetList = m.queue
+		}
+
+		if len(targetList) > 0 {
+			id = targetList[m.cursorMain].ID
 		}
 	case filterAlbums:
 		if len(m.albums) > 0 {
@@ -608,7 +618,11 @@ func mediaToggleFavorite(m model, msg tea.Msg) (model, tea.Cmd) {
 	return m, toggleStarCmd(id, isStarred)
 }
 
-func mediaShowFavorites(m model) (model, tea.Cmd) {
+func mediaShowFavorites(m model, msg tea.Msg) (model, tea.Cmd) {
+	if m.focus == focusSearch {
+		return typeInput(m, msg)
+	}
+
 	m.songs = nil
 	m.viewMode = viewList
 	m.focus = focusMain
