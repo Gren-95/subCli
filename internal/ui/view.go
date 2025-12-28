@@ -404,7 +404,7 @@ func footerContent(m model) string {
 	if m.playerStatus.Title == "<nil>" {
 		title = "Nothing playing"
 		artist = ""
-	} else if strings.Contains(m.playerStatus.Title, "stream?c=Depth") {
+	} else if strings.Contains(m.playerStatus.Title, "stream?c=SubTUI") {
 		title = "Loading..."
 		artist = ""
 	} else {
