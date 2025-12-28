@@ -85,10 +85,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "D":
 			m = mediaDeleteQueue(m)
 
-		case "ctrl+k":
+		case "K":
 			m = mediaSongUpQueue(m)
 
-		case "ctrl+j":
+		case "J":
 			m = mediaSongDownQueue(m)
 
 		case ",":
