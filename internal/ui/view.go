@@ -457,11 +457,16 @@ func footerContent(m model) string {
 	bottomRowLoop := lipgloss.NewStyle().Width(gapWidth).Align(lipgloss.Right).Foreground(subtle).Render(loopText)
 	bottomRow := lipgloss.JoinHorizontal(lipgloss.Top, bottowRowArtistAlbum, bottomRowLoop)
 
-	rowProgress := fmt.Sprintf("  %s %s %s",
+	rawProgress := fmt.Sprintf("%s %s %s",
 		currStr,
 		lipgloss.NewStyle().Foreground(special).Render("["+barStr+"]"),
 		durStr,
 	)
+
+	rowProgress := lipgloss.NewStyle().
+		Width(m.width - 2).
+		Align(lipgloss.Center).
+		Render(rawProgress)
 
 	return fmt.Sprintf("%s\n%s\n\n%s", topRow, bottomRow, rowProgress)
 }
