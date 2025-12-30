@@ -175,7 +175,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case LoopNone:
 				//
 			case LoopAll:
-				m.queueIndex = -1
+				if m.queueIndex == len(m.queue)-1 {
+					m.queueIndex = -1
+				}
+
 			case LoopOne:
 				m.queueIndex = m.queueIndex - 1
 
@@ -308,7 +311,7 @@ func enter(m model) (tea.Model, tea.Cmd) {
 			// Play song
 			case filterSongs:
 				if len(m.songs) > 0 {
-					return m, m.setQueue(m.songs, m.cursorMain)
+					return m, m.setQueue(m.cursorMain)
 				}
 
 			// Open songs in album

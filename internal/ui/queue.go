@@ -58,7 +58,7 @@ func (m *model) playPrev() tea.Cmd {
 	return m.playQueueIndex(newIndex)
 }
 
-func (m *model) setQueue(songs []api.Song, startIndex int) tea.Cmd {
+func (m *model) setQueue(startIndex int) tea.Cmd {
 	newQueue := make([]api.Song, len(m.songs))
 	copy(newQueue, m.songs)
 	m.queue = newQueue

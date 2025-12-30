@@ -91,24 +91,6 @@ func TogglePause() {
 	_ = mpvClient.SetProperty("pause", !status)
 }
 
-func ToggleLoop() {
-	if mpvClient == nil {
-		return
-	}
-
-	status := mpvClient.IsPlayLoop()
-	_ = mpvClient.SetProperty("loop", !status)
-}
-
-func ToggleShuffle() {
-	if mpvClient == nil {
-		return
-	}
-
-	status := mpvClient.IsShuffle()
-	_ = mpvClient.SetProperty("shuffle", !status)
-}
-
 func Back10Seconds() {
 	_ = mpvClient.Seek(-10)
 }
