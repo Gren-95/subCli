@@ -166,8 +166,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		m.playerStatus = player.PlayerStatus(msg)
-		if m.playerStatus.Duration > 0 &&
-			m.playerStatus.Current >= m.playerStatus.Duration-1 &&
+
+		if ((m.playerStatus.Duration > 0 && m.playerStatus.Current >= m.playerStatus.Duration-0.5) ||
+			(m.playerStatus.Title == "<nil>" && m.queueIndex != len(m.queue)-1)) &&
 			!m.playerStatus.Paused {
 
 			switch m.loopMode {
