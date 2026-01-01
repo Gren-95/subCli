@@ -21,25 +21,41 @@ jobs:
       - name: Get latest tag
         id: get_tag
         run: |
-          # Get the latest tag, or use v0.0.0 if no tags exist
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          # Get the latest tag, or use empty if no tags exist
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           
-          # Parse version numbers
-          VERSION=${LATEST_TAG#v}
-          MAJOR=$(echo $VERSION | cut -d. -f1)
-          MINOR=$(echo $VERSION | cut -d. -f2)
-          PATCH=$(echo $VERSION | cut -d. -f3)
-          
-          echo "major=$MAJOR" >> $GITHUB_OUTPUT
-          echo "minor=$MINOR" >> $GITHUB_OUTPUT
-          echo "patch=$PATCH" >> $GITHUB_OUTPUT
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No existing tags found, starting from v0.0.0"
+            echo "latest_tag=" >> $GITHUB_OUTPUT
+            echo "has_tags=false" >> $GITHUB_OUTPUT
+            echo "major=0" >> $GITHUB_OUTPUT
+            echo "minor=0" >> $GITHUB_OUTPUT
+            echo "patch=0" >> $GITHUB_OUTPUT
+          else
+            echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+            echo "has_tags=true" >> $GITHUB_OUTPUT
+            
+            # Parse version numbers
+            VERSION=${LATEST_TAG#v}
+            MAJOR=$(echo $VERSION | cut -d. -f1)
+            MINOR=$(echo $VERSION | cut -d. -f2)
+            PATCH=$(echo $VERSION | cut -d. -f3)
+            
+            echo "major=$MAJOR" >> $GITHUB_OUTPUT
+            echo "minor=$MINOR" >> $GITHUB_OUTPUT
+            echo "patch=$PATCH" >> $GITHUB_OUTPUT
+          fi
 
       - name: Determine version bump
         id: bump
         run: |
-          # Get commit messages since last tag
-          COMMITS=$(git log ${{ steps.get_tag.outputs.latest_tag }}..HEAD --pretty=format:"%s")
+          # Get commit messages since last tag (or all commits if no tags)
+          if [ "${{ steps.get_tag.outputs.has_tags }}" = "true" ]; then
+            COMMITS=$(git log ${{ steps.get_tag.outputs.latest_tag }}..HEAD --pretty=format:"%s")
+          else
+            # No tags yet, get all commits
+            COMMITS=$(git log --pretty=format:"%s")
+          fi
           
           # Check for breaking changes (MAJOR bump)
           if echo "$COMMITS" | grep -qiE "^(feat|fix|refactor|perf)(\(.+\))?!:|^BREAKING CHANGE:"; then
@@ -74,7 +90,13 @@ jobs:
         id: check_release
         run: |
           # Check if there are new commits since last tag
-          COMMITS_COUNT=$(git rev-list ${{ steps.get_tag.outputs.latest_tag }}..HEAD --count 2>/dev/null || echo "1")
+          if [ "${{ steps.get_tag.outputs.has_tags }}" = "true" ]; then
+            COMMITS_COUNT=$(git rev-list ${{ steps.get_tag.outputs.latest_tag }}..HEAD --count 2>/dev/null || echo "0")
+          else
+            # No tags yet, count all commits
+            COMMITS_COUNT=$(git rev-list HEAD --count)
+          fi
+          
           echo "commits_count=$COMMITS_COUNT" >> $GITHUB_OUTPUT
           
           if [ "$COMMITS_COUNT" -gt "0" ]; then
