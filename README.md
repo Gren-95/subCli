@@ -14,17 +14,30 @@ A command-line interface for streaming music from Subsonic-compatible servers to
 
 ## Installation
 
+### From Releases (Recommended)
+
+Download the latest binary for your platform:
+
+```bash
+# Go to releases page
+https://github.com/gren-95/subCli/releases/latest
+```
+
+### Using Go
+
 ```bash
 go install github.com/gren-95/subCli@latest
 ```
 
-Or build from source:
+### From Source
 
 ```bash
 git clone https://github.com/gren-95/subCli
 cd subCli
 go build -o subcli
 ```
+
+> **Note:** Releases are automatically created on every push to main using semantic versioning based on commit messages.
 
 ## Configuration
 

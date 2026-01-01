@@ -1,0 +1,122 @@
+name: Automated Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          # Get the latest tag, or use v0.0.0 if no tags exist
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          
+          # Parse version numbers
+          VERSION=${LATEST_TAG#v}
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          
+          echo "major=$MAJOR" >> $GITHUB_OUTPUT
+          echo "minor=$MINOR" >> $GITHUB_OUTPUT
+          echo "patch=$PATCH" >> $GITHUB_OUTPUT
+
+      - name: Determine version bump
+        id: bump
+        run: |
+          # Get commit messages since last tag
+          COMMITS=$(git log ${{ steps.get_tag.outputs.latest_tag }}..HEAD --pretty=format:"%s")
+          
+          # Check for breaking changes (MAJOR bump)
+          if echo "$COMMITS" | grep -qiE "^(feat|fix|refactor|perf)(\(.+\))?!:|^BREAKING CHANGE:"; then
+            MAJOR=${{ steps.get_tag.outputs.major }}
+            MINOR=0
+            PATCH=0
+            NEW_MAJOR=$((MAJOR + 1))
+            NEW_VERSION="v${NEW_MAJOR}.${MINOR}.${PATCH}"
+            echo "bump_type=major" >> $GITHUB_OUTPUT
+          # Check for features (MINOR bump)
+          elif echo "$COMMITS" | grep -qiE "^feat(\(.+\))?:"; then
+            MAJOR=${{ steps.get_tag.outputs.major }}
+            MINOR=${{ steps.get_tag.outputs.minor }}
+            NEW_MINOR=$((MINOR + 1))
+            PATCH=0
+            NEW_VERSION="v${MAJOR}.${NEW_MINOR}.${PATCH}"
+            echo "bump_type=minor" >> $GITHUB_OUTPUT
+          # Default to PATCH bump
+          else
+            MAJOR=${{ steps.get_tag.outputs.major }}
+            MINOR=${{ steps.get_tag.outputs.minor }}
+            PATCH=${{ steps.get_tag.outputs.patch }}
+            NEW_PATCH=$((PATCH + 1))
+            NEW_VERSION="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+            echo "bump_type=patch" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version will be: $NEW_VERSION"
+
+      - name: Check if release needed
+        id: check_release
+        run: |
+          # Check if there are new commits since last tag
+          COMMITS_COUNT=$(git rev-list ${{ steps.get_tag.outputs.latest_tag }}..HEAD --count 2>/dev/null || echo "1")
+          echo "commits_count=$COMMITS_COUNT" >> $GITHUB_OUTPUT
+          
+          if [ "$COMMITS_COUNT" -gt "0" ]; then
+            echo "needs_release=true" >> $GITHUB_OUTPUT
+            echo "Release needed: $COMMITS_COUNT new commits"
+          else
+            echo "needs_release=false" >> $GITHUB_OUTPUT
+            echo "No release needed: no new commits"
+          fi
+
+      - name: Create and push tag
+        if: steps.check_release.outputs.needs_release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a ${{ steps.bump.outputs.new_version }} -m "Release ${{ steps.bump.outputs.new_version }}"
+          git push origin ${{ steps.bump.outputs.new_version }}
+
+      - name: Set up Go
+        if: steps.check_release.outputs.needs_release == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Run GoReleaser
+        if: steps.check_release.outputs.needs_release == 'true'
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: '~> v2'
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        if: steps.check_release.outputs.needs_release == 'true'
+        run: |
+          echo "## 🚀 Release Created!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** ${{ steps.bump.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Bump Type:** ${{ steps.bump.outputs.bump_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Previous Version:** ${{ steps.get_tag.outputs.latest_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download at: https://github.com/gren-95/subCli/releases/tag/${{ steps.bump.outputs.new_version }}" >> $GITHUB_STEP_SUMMARY
+
