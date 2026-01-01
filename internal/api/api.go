@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/gren-95/subCli/internal/config"
 )
 
 type SubsonicResponse struct {
@@ -83,7 +85,9 @@ func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, 
 	baseUrl := AppConfig.URL + "/rest" + endpoint
 
 	salt := generateSalt()
-	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	// Use GetPassword() to get decrypted password
+	password := config.GetPassword()
+	hash := md5.Sum([]byte(password + salt))
 	token := hex.EncodeToString(hash[:])
 
 	v := url.Values{}
@@ -281,7 +285,8 @@ func SubsonicStream(id string) string {
 	baseUrl := AppConfig.URL + "/rest/stream"
 
 	salt := generateSalt()
-	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	password := config.GetPassword()
+	hash := md5.Sum([]byte(password + salt))
 	token := hex.EncodeToString(hash[:])
 
 	v := url.Values{}
@@ -315,7 +320,8 @@ func SubsonicCoverArt(id string) ([]byte, error) {
 	baseUrl := AppConfig.URL + "/rest/getCoverArt"
 
 	salt := generateSalt()
-	hash := md5.Sum([]byte(AppConfig.Password + salt))
+	password := config.GetPassword()
+	hash := md5.Sum([]byte(password + salt))
 	token := hex.EncodeToString(hash[:])
 
 	v := url.Values{}

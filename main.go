@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gren-95/subCli/internal/api"
+	"github.com/gren-95/subCli/internal/config"
 	"github.com/spf13/cobra"
 )
 
@@ -34,6 +35,16 @@ func main() {
 		Run:   runCLI,
 	}
 
+	// Setup command for first-time configuration
+	setupCmd := &cobra.Command{
+		Use:   "setup",
+		Short: "Run interactive setup to configure subCli",
+		Long:  `Interactively configure subCli with your Subsonic server credentials.`,
+		Run:   runSetup,
+	}
+
+	rootCmd.AddCommand(setupCmd)
+
 	rootCmd.Flags().BoolVarP(&shuffle, "shuffle", "s", false, "Shuffle the playlist")
 	rootCmd.Flags().StringVarP(&loopMode, "loop", "l", "none", "Loop mode: none, all, one")
 	rootCmd.Flags().StringVarP(&playlist, "playlist", "p", "", "Play a specific playlist by name or ID")
@@ -51,20 +62,43 @@ func main() {
 	}
 }
 
+func runSetup(cmd *cobra.Command, args []string) {
+	if err := config.InteractiveSetup(); err != nil {
+		fmt.Fprintf(os.Stderr, "Setup error: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Test the connection
+	if err := api.SubsonicPing(); err != nil {
+		fmt.Fprintf(os.Stderr, "✗ Connection test failed: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Please check your credentials and try again.\n")
+		os.Exit(1)
+	}
+
+	fmt.Println("✓ Connection test successful!")
+	fmt.Println()
+	fmt.Println("You're all set! Try running:")
+	fmt.Println("  subcli --shuffle | mpv --playlist=-")
+}
+
 func runCLI(cmd *cobra.Command, args []string) {
 	// Load configuration
 	if err := api.LoadConfig(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
-		fmt.Fprintf(os.Stderr, "Please create a config file at ~/.config/subcli/config.yaml with:\n")
-		fmt.Fprintf(os.Stderr, "  username: your_username\n")
-		fmt.Fprintf(os.Stderr, "  password: your_password\n")
-		fmt.Fprintf(os.Stderr, "  URL: http://your-server.com\n")
+		fmt.Fprintf(os.Stderr, "\nRun 'subcli setup' to configure your connection.\n")
 		os.Exit(1)
 	}
 
 	// Validate configuration
-	if api.AppConfig.Username == "" || api.AppConfig.Password == "" || api.AppConfig.URL == "" {
+	if api.AppConfig.Username == "" || api.AppConfig.URL == "" {
 		fmt.Fprintf(os.Stderr, "Error: Configuration is incomplete\n")
+		fmt.Fprintf(os.Stderr, "Run 'subcli setup' to configure your connection.\n")
+		os.Exit(1)
+	}
+
+	if config.GetPassword() == "" {
+		fmt.Fprintf(os.Stderr, "Error: Password not configured\n")
+		fmt.Fprintf(os.Stderr, "Run 'subcli setup' to configure your connection.\n")
 		os.Exit(1)
 	}
 

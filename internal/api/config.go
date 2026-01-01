@@ -1,62 +1,16 @@
 package api
 
 import (
-	"fmt"
-	"os"
-	"path/filepath"
-
-	"gopkg.in/yaml.v3"
+	"github.com/gren-95/subCli/internal/config"
 )
 
-type Config struct {
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	URL      string `yaml:"URL"`
-}
-
-var AppConfig Config
+// Exported for backwards compatibility
+var AppConfig = &config.AppConfig
 
 func LoadConfig() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	configPath := filepath.Join(home, ".config", "subcli", "config.yaml")
-
-	file, err := os.Open(configPath)
-	if err != nil {
-		return fmt.Errorf("could not open config file: %v", err)
-	}
-	defer func() { _ = file.Close() }()
-
-	decoder := yaml.NewDecoder(file)
-	if err := decoder.Decode(&AppConfig); err != nil {
-		return fmt.Errorf("could not decode config: %v", err)
-	}
-
-	return nil
+	return config.LoadConfig()
 }
 
 func SaveConfig() error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-
-	configPath := filepath.Join(home, ".config", "subcli", "config.yaml")
-
-	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
-		return err
-	}
-
-	file, err := os.Create(configPath)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = file.Close() }()
-
-	encoder := yaml.NewEncoder(file)
-	encoder.SetIndent(2)
-	return encoder.Encode(&AppConfig)
+	return config.SaveConfig()
 }
