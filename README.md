@@ -1,116 +1,264 @@
-# SubTUI
+# subCli
 
-**SubTUI** is a lightweight TUI music player for Subsonic-compatible servers (Navidrome, Gonic, Airsonic, etc.) built with Go and the Bubble Tea framework. It uses `mpv` as the underlying audio engine supporting multiple audio formats. It supports scrobbeling ensuring your play counts are updated on your server and on any external services configured like Last.FM or ListenBrainz
+A command-line interface for streaming music from Subsonic-compatible servers to mpv.
 
-![Main View](./screenshots/main_view.png)
+## Features
+
+- 🎵 Stream music directly to mpv via pipe
+- 🔀 Shuffle playlists
+- 🔁 Loop modes (none, all, one)
+- ⭐ Access favorites
+- 🔍 Search for songs, albums, and artists
+- 📋 Play playlists
+- 🎲 Random album playback
 
 ## Installation
 
-### Prerequisites
-
-You must have **mpv** installed and available in your system path.
-
-* **Ubuntu/Debian:** `sudo apt install mpv`
-* **Arch:** `sudo pacman -S mpv`
-* **macOS:** `brew install mpv`
-
-### From Releases
-
-You can download pre-compiled binaries for Linux and macOS directly from the [Releases](https://github.com/MattiaPun/SubTUI/releases) page. Simply download the archive for your architecture, extract it, and run the binary.
-
-### Arch Linux (AUR)
-
-You can install SubTUI directly from the AUR: ``yay -S subtui-git``
-
-
-### From Source
-
 ```bash
-# Clone the repo
-git clone https://github.com/MattiaPun/SubTUI.git
-cd SubTUI
-
-# Build
-go build .
-
-# Run
-./subtui
+go install github.com/gren-95/subCli@latest
 ```
 
-## Keybinds
-### Global Navigation
-| Key             	| Action                                                 	|
-|-----------------	|--------------------------------------------------------	|
-| `Tab`           	| Cycle focus forward (Search → Sidebar → Main → Footer) 	|
-| `Shift` + `Tab` 	| Cycle focus backward                                   	|
-| `/`             	| Focus the Search bar                                   	|
-| `q`             	| Quit application (except during Login)                 	|
-| `Ctrl` + `c`    	| Quit application                                       	|
+Or build from source:
 
-### Library & Playlists
-| Key          	| Action                      	|
-|--------------	|-----------------------------	|
-| `j` / `Down` 	| Move selection down         	|
-| `k` / `Up`   	| Move selection up           	|
-| `Enter`      	| Play selection / Open Album 	|
+```bash
+git clone https://github.com/gren-95/subCli
+cd subCli
+go build -o subcli
+```
 
-### Media Controls
-| Key          	| Action                                   	|
-|--------------	|------------------------------------------	|
-| `p` / `P` 	| Toggle play/pause                      	|
-| `j` / `Down` 	| Move selection down                      	|
-| `k` / `Up`   	| Move selection up                        	|
-| `Enter`      	| Play selection / Open Album              	|
-| `S`          	| Shuffle Queue (Keeps current song first) 	|
-| `L`          	| Toggle Loop (None → All → One)           	|
-| `w`          	| Restart song                          	|
-| `.`          	| Forward 10 seconds                       	|
-| `,`          	| Rewind 10 seconds                        	|
+## Configuration
 
-### Starred (liked) songs 
-| Key 	| Action             	|
-|-----	|--------------------	|
-| `f` 	| Toggle star        	|
-| `F` 	| Open starred Songs 	|
+Create a configuration file at `~/.config/subcli/config.yaml`:
 
-### Queue Management
-| Key 	| Action                   	|
-|-----	|--------------------------	|
-| `N` 	| Play song next           	|
-| `a` 	| Add song to queue        	|
-| `d` 	| Remove song to queue     	|
-| `D` 	| Clear queue              	|
-| `K` 	| Move song up (Reorder)   	|
-| `J` 	| Move song down (Reorder) 	|
+```yaml
+username: your_username
+password: your_password
+URL: https://your-subsonic-server.com
+```
 
+## Usage
 
-##  Configuration
+### Basic Usage
 
-On the first launch, SubTUI will ask for your server credentials:
+Pipe to mpv or VLC to play music:
 
-1. **Server URL:** (e.g., `http(s)://music.example.com`)
-2. **Username**
-3. **Password**
+```bash
+# With mpv
+subcli | mpv --playlist=-
 
-**Security Note**: Your credentials are stored in plaintext in `~/.config/subtui/config.yaml`.
+# With VLC
+subcli --m3u | vlc -
+```
 
-##  Screenshots
+### Search and Play
 
-![Login](./screenshots/login.png)
-![Queue](./screenshots/queue_view.png)
+Search for songs and play them:
 
+```bash
+subcli --search "artist name" --type song | mpv --playlist=-
+```
 
+Search for an album:
 
-## Contributing
+```bash
+subcli --search "album name" --type album | mpv --playlist=-
+```
 
-Contributions are welcome!
+Search for an artist:
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```bash
+subcli --search "artist name" --type artist | mpv --playlist=-
+```
+
+### Shuffle and Loop
+
+Shuffle your playlist:
+
+```bash
+subcli --search "rock" --shuffle | mpv --playlist=-
+```
+
+Loop all songs:
+
+```bash
+subcli --playlist "My Favorites" --loop all | mpv --playlist=-
+```
+
+Loop one song:
+
+```bash
+subcli --search "favorite song" --loop one | mpv --playlist=-
+```
+
+### Play Playlists
+
+Play a playlist by name:
+
+```bash
+subcli --playlist "Chill Mix" | mpv --playlist=-
+```
+
+Play a playlist by ID:
+
+```bash
+subcli --playlist "playlist-id-123" | mpv --playlist=-
+```
+
+### Play Albums
+
+Play a specific album by ID:
+
+```bash
+subcli --album "album-id-456" | mpv --playlist=-
+```
+
+### Play Artist's Music
+
+Play all songs from an artist by ID:
+
+```bash
+subcli --artist "artist-id-789" | mpv --playlist=-
+```
+
+### Play Favorites
+
+Play your starred/favorite songs:
+
+```bash
+subcli --favorites | mpv --playlist=-
+```
+
+Shuffle your favorites:
+
+```bash
+subcli --favorites --shuffle | mpv --playlist=-
+```
+
+### Limit Results
+
+Limit the number of songs:
+
+```bash
+subcli --search "pop" --limit 20 | mpv --playlist=-
+```
+
+### Random Albums
+
+If you don't specify any flags, subCli will fetch random albums:
+
+```bash
+subcli | mpv --playlist=-
+```
+
+Shuffle random albums:
+
+```bash
+subcli --shuffle | mpv --playlist=-
+```
+
+## Command-Line Options
+
+| Flag | Short | Description | Default |
+|------|-------|-------------|---------|
+| `--search` | `-q` | Search for songs/albums/artists | - |
+| `--type` | `-t` | Search type: song, album, artist | song |
+| `--playlist` | `-p` | Play a specific playlist by name or ID | - |
+| `--album` | `-a` | Play a specific album by ID | - |
+| `--artist` | `-r` | Play albums from a specific artist by ID | - |
+| `--favorites` | `-f` | Play favorite songs | false |
+| `--shuffle` | `-s` | Shuffle the playlist | false |
+| `--loop` | `-l` | Loop mode: none, all, one | none |
+| `--limit` | `-n` | Limit number of results | 50 |
+| `--m3u` | `-m` | Output in M3U playlist format | false |
+
+## Media Player Tips
+
+### MPV
+
+**Background Playback:**
+
+```bash
+subcli --shuffle | mpv --playlist=- &
+```
+
+**MPV Socket Control:**
+
+For better control, use mpv with a socket:
+
+```bash
+subcli --shuffle | mpv --playlist=- --input-ipc-server=/tmp/mpvsocket
+```
+
+Then control playback with:
+
+```bash
+echo '{ "command": ["cycle", "pause"] }' | socat - /tmp/mpvsocket
+```
+
+### VLC
+
+**Basic VLC usage:**
+
+```bash
+# With M3U format (recommended)
+subcli --shuffle --m3u | vlc -
+
+# Background playback
+subcli --shuffle --m3u | vlc --intf dummy -
+
+# Save and play
+subcli --favorites --m3u > playlist.m3u
+vlc playlist.m3u
+```
+
+**VLC HTTP Interface:**
+
+```bash
+# Start with web interface
+subcli --shuffle --m3u | vlc --intf http --http-password mypassword -
+
+# Access at http://localhost:8080
+```
+
+### Save Playlist
+
+Save the playlist to a file:
+
+```bash
+subcli --favorites > playlist.m3u
+```
+
+Then play it later:
+
+```bash
+mpv --playlist=playlist.m3u
+```
+
+## Examples
+
+Random shuffled music for background listening:
+
+```bash
+subcli --shuffle --limit 100 | mpv --playlist=- --no-video --volume=50
+```
+
+Play your favorites on loop:
+
+```bash
+subcli --favorites --shuffle --loop all | mpv --playlist=-
+```
+
+Quick search and play:
+
+```bash
+subcli -q "miles davis" -t artist -s | mpv --playlist=-
+```
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+MIT License - see LICENSE file for details
+
+## Credits
+
+Originally based on [SubTUI](https://github.com/MattiaPun/SubTUI), converted to a CLI application by [gren-95](https://github.com/gren-95).
+

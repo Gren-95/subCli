@@ -22,6 +22,11 @@
 go.work
 go.work.sum
 
+# Binary outputs
+subcli
+SubTUI
+subtui
+
 # env file
 .env
 

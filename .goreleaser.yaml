@@ -1,4 +1,4 @@
-project_name: SubTUI
+project_name: subCli
 
 before:
   hooks:
@@ -14,7 +14,7 @@ builds:
       - amd64
       - arm64
 
-    binary: subtui
+    binary: subcli
     
 archives:
   - format: tar.gz

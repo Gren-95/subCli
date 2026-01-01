@@ -91,7 +91,7 @@ func subsonicGET(endpoint string, params map[string]string) (*SubsonicResponse, 
 	v.Set("t", token)
 	v.Set("s", salt)
 	v.Set("v", "1.16.1")
-	v.Set("c", "SubTUI")
+	v.Set("c", "subCli")
 	v.Set("f", "json")
 
 	for key, value := range params {
@@ -291,7 +291,7 @@ func SubsonicStream(id string) string {
 	v.Set("t", token)
 	v.Set("s", salt)
 	v.Set("v", "1.16.1")
-	v.Set("c", "SubTUI")
+	v.Set("c", "subCli")
 	v.Set("f", "json")
 
 	fullUrl := baseUrl + "?" + v.Encode()
@@ -325,7 +325,7 @@ func SubsonicCoverArt(id string) ([]byte, error) {
 	v.Set("t", token)
 	v.Set("s", salt)
 	v.Set("v", "1.16.1")
-	v.Set("c", "SubTUI")
+	v.Set("c", "subCli")
 	v.Set("f", "json")
 
 	url := baseUrl + "?" + v.Encode()

@@ -22,7 +22,7 @@ func LoadConfig() error {
 		return err
 	}
 
-	configPath := filepath.Join(home, ".config", "subtui", "config.yaml")
+	configPath := filepath.Join(home, ".config", "subcli", "config.yaml")
 
 	file, err := os.Open(configPath)
 	if err != nil {
@@ -44,7 +44,7 @@ func SaveConfig() error {
 		return err
 	}
 
-	configPath := filepath.Join(home, ".config", "subtui", "config.yaml")
+	configPath := filepath.Join(home, ".config", "subcli", "config.yaml")
 
 	if err := os.MkdirAll(filepath.Dir(configPath), 0755); err != nil {
 		return err
