@@ -18,11 +18,9 @@ import (
 )
 
 type Config struct {
-	Username       string `yaml:"username"`
-	Password       string `yaml:"password,omitempty"`
-	PasswordHash   string `yaml:"password_hash,omitempty"`
-	URL            string `yaml:"URL"`
-	UseEncryption  bool   `yaml:"use_encryption,omitempty"`
+	Username     string `yaml:"username"`
+	PasswordHash string `yaml:"password_hash"`
+	URL          string `yaml:"URL"`
 }
 
 var AppConfig Config
@@ -53,24 +51,19 @@ func LoadConfig() error {
 		return fmt.Errorf("could not decode config: %v", err)
 	}
 
-	// Handle encrypted password
-	if AppConfig.PasswordHash != "" && AppConfig.UseEncryption {
+	// Decrypt password
+	if AppConfig.PasswordHash != "" {
 		decryptedPassword, err = decryptPassword(AppConfig.PasswordHash, AppConfig.Username)
 		if err != nil {
 			return fmt.Errorf("could not decrypt password: %v", err)
 		}
-	} else if AppConfig.Password != "" {
-		decryptedPassword = AppConfig.Password
 	}
 
 	return nil
 }
 
 func GetPassword() string {
-	if decryptedPassword != "" {
-		return decryptedPassword
-	}
-	return AppConfig.Password
+	return decryptedPassword
 }
 
 func SaveConfig() error {
@@ -89,22 +82,14 @@ func SaveConfig() error {
 	}
 	defer file.Close()
 
-	// Create a copy to avoid modifying the original
-	configToSave := AppConfig
-	
-	// If using encryption, clear the plain text password
-	if configToSave.UseEncryption && configToSave.PasswordHash != "" {
-		configToSave.Password = ""
-	}
-	
-	// If not using encryption, clear the hash
-	if !configToSave.UseEncryption && configToSave.Password != "" {
-		configToSave.PasswordHash = ""
+	// Set proper permissions for config file (readable/writable by owner only)
+	if err := os.Chmod(configPath, 0600); err != nil {
+		return fmt.Errorf("could not set config file permissions: %v", err)
 	}
 
 	encoder := yaml.NewEncoder(file)
 	encoder.SetIndent(2)
-	return encoder.Encode(&configToSave)
+	return encoder.Encode(&AppConfig)
 }
 
 // InteractiveSetup runs the first-time setup wizard
@@ -157,38 +142,19 @@ func InteractiveSetup() error {
 		return fmt.Errorf("password cannot be empty")
 	}
 
-	// Ask about encryption
-	fmt.Println()
-	fmt.Println("Password Storage Options:")
-	fmt.Println("  1. Encrypted (recommended)")
-	fmt.Println("  2. Plain text (less secure)")
-	fmt.Print("Choose option (1-2) [1]: ")
-	var encChoice string
-	fmt.Scanln(&encChoice)
-	if encChoice == "" {
-		encChoice = "1"
+	// Encrypt password
+	encrypted, err := encryptPassword(password, username)
+	if err != nil {
+		return fmt.Errorf("could not encrypt password: %v", err)
 	}
 
-	useEncryption := encChoice == "1"
-
-	// Build config
+	// Build config with encrypted password
 	AppConfig = Config{
-		Username:      username,
-		URL:           url,
-		UseEncryption: useEncryption,
+		Username:     username,
+		URL:          url,
+		PasswordHash: encrypted,
 	}
-
-	if useEncryption {
-		encrypted, err := encryptPassword(password, username)
-		if err != nil {
-			return fmt.Errorf("could not encrypt password: %v", err)
-		}
-		AppConfig.PasswordHash = encrypted
-		decryptedPassword = password
-	} else {
-		AppConfig.Password = password
-		decryptedPassword = password
-	}
+	decryptedPassword = password
 
 	// Save config
 	if err := SaveConfig(); err != nil {
@@ -198,6 +164,7 @@ func InteractiveSetup() error {
 	fmt.Println()
 	fmt.Println("✓ Configuration saved successfully!")
 	fmt.Printf("  Config location: %s\n", configPath)
+	fmt.Println("  Password stored securely with AES-256 encryption")
 	fmt.Println()
 
 	// Test connection
