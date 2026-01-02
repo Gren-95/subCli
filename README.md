@@ -41,13 +41,31 @@ go build -o subcli
 
 ## Configuration
 
+### First-Time Setup (Recommended)
+
+Run the interactive setup wizard:
+
+```bash
+subcli setup
+```
+
+This will:
+- Guide you through server URL and credentials
+- Automatically encrypt your password (AES-256)
+- Test the connection
+- Save configuration to `~/.config/subcli/config.yaml`
+
+### Manual Configuration
+
 Create a configuration file at `~/.config/subcli/config.yaml`:
 
 ```yaml
 username: your_username
-password: your_password
+password_hash: <encrypted_password_from_setup>
 URL: https://your-subsonic-server.com
 ```
+
+**Note:** Passwords must be encrypted. Use `subcli setup` to create the config properly.
 
 ## Usage
 
@@ -83,24 +101,12 @@ Search for an artist:
 subcli --search "artist name" --type artist | mpv --playlist=-
 ```
 
-### Shuffle and Loop
+### Shuffle
 
 Shuffle your playlist:
 
 ```bash
 subcli --search "rock" --shuffle | mpv --playlist=-
-```
-
-Loop all songs:
-
-```bash
-subcli --playlist "My Favorites" --loop all | mpv --playlist=-
-```
-
-Loop one song:
-
-```bash
-subcli --search "favorite song" --loop one | mpv --playlist=-
 ```
 
 ### Play Playlists
@@ -180,9 +186,10 @@ subcli --shuffle | mpv --playlist=-
 | `--artist` | `-r` | Play albums from a specific artist by ID | - |
 | `--favorites` | `-f` | Play favorite songs | false |
 | `--shuffle` | `-s` | Shuffle the playlist | false |
-| `--loop` | `-l` | Loop mode: none, all, one | none |
 | `--limit` | `-n` | Limit number of results | 50 |
 | `--m3u` | `-m` | Output in M3U playlist format | false |
+
+**Note:** For looping, use your media player's loop options (e.g., `mpv --loop-playlist` or `vlc --loop`).
 
 ## Media Player Tips
 
@@ -255,10 +262,10 @@ Random shuffled music for background listening:
 subcli --shuffle --limit 100 | mpv --playlist=- --no-video --volume=50
 ```
 
-Play your favorites on loop:
+Play your favorites on loop (using mpv's loop):
 
 ```bash
-subcli --favorites --shuffle --loop all | mpv --playlist=-
+subcli --favorites --shuffle | mpv --playlist=- --loop-playlist
 ```
 
 Quick search and play:

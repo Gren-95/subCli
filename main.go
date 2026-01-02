@@ -14,7 +14,6 @@ import (
 
 var (
 	shuffle    bool
-	loopMode   string
 	playlist   string
 	album      string
 	artist     string
@@ -46,7 +45,6 @@ func main() {
 	rootCmd.AddCommand(setupCmd)
 
 	rootCmd.Flags().BoolVarP(&shuffle, "shuffle", "s", false, "Shuffle the playlist")
-	rootCmd.Flags().StringVarP(&loopMode, "loop", "l", "none", "Loop mode: none, all, one")
 	rootCmd.Flags().StringVarP(&playlist, "playlist", "p", "", "Play a specific playlist by name or ID")
 	rootCmd.Flags().StringVarP(&album, "album", "a", "", "Play a specific album by ID")
 	rootCmd.Flags().StringVarP(&artist, "artist", "r", "", "Play albums from a specific artist by ID")
