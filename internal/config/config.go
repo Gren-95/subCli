@@ -89,9 +89,22 @@ func SaveConfig() error {
 	}
 	defer file.Close()
 
+	// Create a copy to avoid modifying the original
+	configToSave := AppConfig
+	
+	// If using encryption, clear the plain text password
+	if configToSave.UseEncryption && configToSave.PasswordHash != "" {
+		configToSave.Password = ""
+	}
+	
+	// If not using encryption, clear the hash
+	if !configToSave.UseEncryption && configToSave.Password != "" {
+		configToSave.PasswordHash = ""
+	}
+
 	encoder := yaml.NewEncoder(file)
 	encoder.SetIndent(2)
-	return encoder.Encode(&AppConfig)
+	return encoder.Encode(&configToSave)
 }
 
 // InteractiveSetup runs the first-time setup wizard
@@ -257,4 +270,5 @@ func decryptPassword(encryptedPassword, username string) (string, error) {
 
 	return string(plaintext), nil
 }
+
 
