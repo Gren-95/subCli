@@ -31,7 +31,7 @@ func getConfigPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".config", "subcli", "config.yaml"), nil
+	return filepath.Join(home, ".config", "subCli", "config.yaml"), nil
 }
 
 func LoadConfig() error {

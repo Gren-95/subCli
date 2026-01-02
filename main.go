@@ -28,7 +28,7 @@ func main() {
 	rand.Seed(time.Now().UnixNano())
 
 	rootCmd := &cobra.Command{
-		Use:   "subcli",
+		Use:   "subCli",
 		Short: "A CLI for streaming music from Subsonic-compatible servers to mpv",
 		Long:  `subCli allows you to search, queue, and stream music from Subsonic servers directly to mpv.`,
 		Run:   runCLI,
@@ -76,27 +76,27 @@ func runSetup(cmd *cobra.Command, args []string) {
 	fmt.Println("✓ Connection test successful!")
 	fmt.Println()
 	fmt.Println("You're all set! Try running:")
-	fmt.Println("  subcli --shuffle | mpv --playlist=-")
+	fmt.Println("  subCli --shuffle | mpv --playlist=-")
 }
 
 func runCLI(cmd *cobra.Command, args []string) {
 	// Load configuration
 	if err := api.LoadConfig(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
-		fmt.Fprintf(os.Stderr, "\nRun 'subcli setup' to configure your connection.\n")
+		fmt.Fprintf(os.Stderr, "\nRun 'subCli setup' to configure your connection.\n")
 		os.Exit(1)
 	}
 
 	// Validate configuration
 	if api.AppConfig.Username == "" || api.AppConfig.URL == "" {
 		fmt.Fprintf(os.Stderr, "Error: Configuration is incomplete\n")
-		fmt.Fprintf(os.Stderr, "Run 'subcli setup' to configure your connection.\n")
+		fmt.Fprintf(os.Stderr, "Run 'subCli setup' to configure your connection.\n")
 		os.Exit(1)
 	}
 
 	if config.GetPassword() == "" {
 		fmt.Fprintf(os.Stderr, "Error: Password not configured\n")
-		fmt.Fprintf(os.Stderr, "Run 'subcli setup' to configure your connection.\n")
+		fmt.Fprintf(os.Stderr, "Run 'subCli setup' to configure your connection.\n")
 		os.Exit(1)
 	}
 

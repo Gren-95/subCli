@@ -14,7 +14,7 @@ builds:
       - amd64
       - arm64
 
-    binary: subcli
+    binary: subCli
     
 archives:
   - format: tar.gz

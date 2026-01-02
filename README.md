@@ -34,7 +34,13 @@ go install github.com/gren-95/subCli@latest
 ```bash
 git clone https://github.com/gren-95/subCli
 cd subCli
-go build -o subcli
+go build -o subCli
+
+# Or use the install script for system-wide installation
+sudo ./install.sh
+
+# Or for user-only installation (no sudo required)
+./install.sh --user
 ```
 
 > **Note:** Releases are automatically created on every push to main using semantic versioning based on commit messages.
@@ -46,18 +52,18 @@ go build -o subcli
 Run the interactive setup wizard:
 
 ```bash
-subcli setup
+subCli setup
 ```
 
 This will:
 - Guide you through server URL and credentials
 - Automatically encrypt your password (AES-256)
 - Test the connection
-- Save configuration to `~/.config/subcli/config.yaml`
+- Save configuration to `~/.config/subCli/config.yaml`
 
 ### Manual Configuration
 
-Create a configuration file at `~/.config/subcli/config.yaml`:
+Create a configuration file at `~/.config/subCli/config.yaml`:
 
 ```yaml
 username: your_username
@@ -65,7 +71,7 @@ password_hash: <encrypted_password_from_setup>
 URL: https://your-subsonic-server.com
 ```
 
-**Note:** Passwords must be encrypted. Use `subcli setup` to create the config properly.
+**Note:** Passwords must be encrypted. Use `subCli setup` to create the config properly.
 
 ## Usage
 
@@ -75,10 +81,10 @@ Pipe to mpv or VLC to play music:
 
 ```bash
 # With mpv
-subcli | mpv --playlist=-
+subCli | mpv --playlist=-
 
 # With VLC
-subcli --m3u | vlc -
+subCli --m3u | vlc -
 ```
 
 ### Search and Play
@@ -86,19 +92,19 @@ subcli --m3u | vlc -
 Search for songs and play them:
 
 ```bash
-subcli --search "artist name" --type song | mpv --playlist=-
+subCli --search "artist name" --type song | mpv --playlist=-
 ```
 
 Search for an album:
 
 ```bash
-subcli --search "album name" --type album | mpv --playlist=-
+subCli --search "album name" --type album | mpv --playlist=-
 ```
 
 Search for an artist:
 
 ```bash
-subcli --search "artist name" --type artist | mpv --playlist=-
+subCli --search "artist name" --type artist | mpv --playlist=-
 ```
 
 ### Shuffle
@@ -106,7 +112,7 @@ subcli --search "artist name" --type artist | mpv --playlist=-
 Shuffle your playlist:
 
 ```bash
-subcli --search "rock" --shuffle | mpv --playlist=-
+subCli --search "rock" --shuffle | mpv --playlist=-
 ```
 
 ### Play Playlists
@@ -114,13 +120,13 @@ subcli --search "rock" --shuffle | mpv --playlist=-
 Play a playlist by name:
 
 ```bash
-subcli --playlist "Chill Mix" | mpv --playlist=-
+subCli --playlist "Chill Mix" | mpv --playlist=-
 ```
 
 Play a playlist by ID:
 
 ```bash
-subcli --playlist "playlist-id-123" | mpv --playlist=-
+subCli --playlist "playlist-id-123" | mpv --playlist=-
 ```
 
 ### Play Albums
@@ -128,7 +134,7 @@ subcli --playlist "playlist-id-123" | mpv --playlist=-
 Play a specific album by ID:
 
 ```bash
-subcli --album "album-id-456" | mpv --playlist=-
+subCli --album "album-id-456" | mpv --playlist=-
 ```
 
 ### Play Artist's Music
@@ -136,7 +142,7 @@ subcli --album "album-id-456" | mpv --playlist=-
 Play all songs from an artist by ID:
 
 ```bash
-subcli --artist "artist-id-789" | mpv --playlist=-
+subCli --artist "artist-id-789" | mpv --playlist=-
 ```
 
 ### Play Favorites
@@ -144,13 +150,13 @@ subcli --artist "artist-id-789" | mpv --playlist=-
 Play your starred/favorite songs:
 
 ```bash
-subcli --favorites | mpv --playlist=-
+subCli --favorites | mpv --playlist=-
 ```
 
 Shuffle your favorites:
 
 ```bash
-subcli --favorites --shuffle | mpv --playlist=-
+subCli --favorites --shuffle | mpv --playlist=-
 ```
 
 ### Limit Results
@@ -158,7 +164,7 @@ subcli --favorites --shuffle | mpv --playlist=-
 Limit the number of songs:
 
 ```bash
-subcli --search "pop" --limit 20 | mpv --playlist=-
+subCli --search "pop" --limit 20 | mpv --playlist=-
 ```
 
 ### Random Albums
@@ -166,13 +172,13 @@ subcli --search "pop" --limit 20 | mpv --playlist=-
 If you don't specify any flags, subCli will fetch random albums:
 
 ```bash
-subcli | mpv --playlist=-
+subCli | mpv --playlist=-
 ```
 
 Shuffle random albums:
 
 ```bash
-subcli --shuffle | mpv --playlist=-
+subCli --shuffle | mpv --playlist=-
 ```
 
 ## Command-Line Options
@@ -198,7 +204,7 @@ subcli --shuffle | mpv --playlist=-
 **Background Playback:**
 
 ```bash
-subcli --shuffle | mpv --playlist=- &
+subCli --shuffle | mpv --playlist=- &
 ```
 
 **MPV Socket Control:**
@@ -206,7 +212,7 @@ subcli --shuffle | mpv --playlist=- &
 For better control, use mpv with a socket:
 
 ```bash
-subcli --shuffle | mpv --playlist=- --input-ipc-server=/tmp/mpvsocket
+subCli --shuffle | mpv --playlist=- --input-ipc-server=/tmp/mpvsocket
 ```
 
 Then control playback with:
@@ -221,13 +227,13 @@ echo '{ "command": ["cycle", "pause"] }' | socat - /tmp/mpvsocket
 
 ```bash
 # With M3U format (recommended)
-subcli --shuffle --m3u | vlc -
+subCli --shuffle --m3u | vlc -
 
 # Background playback
-subcli --shuffle --m3u | vlc --intf dummy -
+subCli --shuffle --m3u | vlc --intf dummy -
 
 # Save and play
-subcli --favorites --m3u > playlist.m3u
+subCli --favorites --m3u > playlist.m3u
 vlc playlist.m3u
 ```
 
@@ -235,7 +241,7 @@ vlc playlist.m3u
 
 ```bash
 # Start with web interface
-subcli --shuffle --m3u | vlc --intf http --http-password mypassword -
+subCli --shuffle --m3u | vlc --intf http --http-password mypassword -
 
 # Access at http://localhost:8080
 ```
@@ -245,7 +251,7 @@ subcli --shuffle --m3u | vlc --intf http --http-password mypassword -
 Save the playlist to a file:
 
 ```bash
-subcli --favorites > playlist.m3u
+subCli --favorites > playlist.m3u
 ```
 
 Then play it later:
@@ -259,19 +265,19 @@ mpv --playlist=playlist.m3u
 Random shuffled music for background listening:
 
 ```bash
-subcli --shuffle --limit 100 | mpv --playlist=- --no-video --volume=50
+subCli --shuffle --limit 100 | mpv --playlist=- --no-video --volume=50
 ```
 
 Play your favorites on loop (using mpv's loop):
 
 ```bash
-subcli --favorites --shuffle | mpv --playlist=- --loop-playlist
+subCli --favorites --shuffle | mpv --playlist=- --loop-playlist
 ```
 
 Quick search and play:
 
 ```bash
-subcli -q "miles davis" -t artist -s | mpv --playlist=-
+subCli -q "miles davis" -t artist -s | mpv --playlist=-
 ```
 
 ## License
